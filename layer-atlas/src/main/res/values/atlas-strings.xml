@@ -22,5 +22,11 @@
         <item>Three people are typing…</item>
         <item>Many people are typing…</item>
     </string-array>
-    
+
+    <string name="today">Today</string>
+    <string name="yesterday">Yesterday</string>
+    <string name="send">SEND</string>
+    <string name="compose_hint">Hi there! ...</string>
+    <string name="delivered">Delivered</string>
+    <string name="read">Read</string>
 </resources>

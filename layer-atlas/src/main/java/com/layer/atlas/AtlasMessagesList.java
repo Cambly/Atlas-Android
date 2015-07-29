@@ -281,11 +281,11 @@ public class AtlasMessagesList extends FrameLayout implements LayerChangeEventLi
                 receiptView.setVisibility(View.GONE);
                 if (latestDeliveredMessage != null && latestDeliveredMessage.getId().equals(cell.messagePart.getMessage().getId())) {
                     receiptView.setVisibility(View.VISIBLE);
-                    receiptView.setText("Delivered");
+                    receiptView.setText(getContext().getString(R.string.delivered));
                 }
                 if (latestReadMessage != null && latestReadMessage.getId().equals(cell.messagePart.getMessage().getId())) {
                     receiptView.setVisibility(View.VISIBLE);
-                    receiptView.setText("Read");
+                    receiptView.setText(getContext().getString(R.string.read));
                 }
                 
                 // processing cell

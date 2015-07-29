@@ -264,9 +264,9 @@ public class Atlas {
         
         String timeBarDayText = null;
         if (sentAt.getTime() > todayMidnight) {
-            timeBarDayText = "Today"; 
+            timeBarDayText = getContext().getString(R.string.today);
         } else if (sentAt.getTime() > yesterMidnight) {
-            timeBarDayText = "Yesterday";
+            timeBarDayText = getContext().getString(R.string.yesterday);
         } else if (sentAt.getTime() > weekAgoMidnight) {
             cal.setTime(sentAt);
             timeBarDayText = Tools.TIME_WEEKDAYS_NAMES[cal.get(Calendar.DAY_OF_WEEK) - 1];

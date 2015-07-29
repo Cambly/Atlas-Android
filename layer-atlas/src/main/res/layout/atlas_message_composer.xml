@@ -37,7 +37,7 @@
         android:maxLines="4"
         android:textSize="@dimen/atlas_text_size_general"
         android:background="@drawable/atlas_ctl_edit_text"
-        android:hint="Hi there! ..."
+        android:hint="@string/compose_hint"
         android:minHeight="48dp"
         />
     
@@ -53,7 +53,7 @@
         android:paddingRight="12dp"
         android:textSize="@dimen/atlas_text_size_general" 
         android:textColor="@color/atlas_text_gray"
-        android:text="SEND"
+        android:text="@string/send"
         />
             
 </LinearLayout>
