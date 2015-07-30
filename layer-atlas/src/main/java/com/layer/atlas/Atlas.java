@@ -253,7 +253,7 @@ public class Atlas {
     }
 
     /** Today, Yesterday, Weekday or Weekday + date */
-    public static String formatTimeDay(Date sentAt) {
+    public static String formatTimeDay(Context ctx, Date sentAt) {
         Calendar cal = Calendar.getInstance();
         cal.set(Calendar.HOUR_OF_DAY, 0);
         cal.set(Calendar.MINUTE, 0);
@@ -264,9 +264,9 @@ public class Atlas {
         
         String timeBarDayText = null;
         if (sentAt.getTime() > todayMidnight) {
-            timeBarDayText = getContext().getString(R.string.today);
+            timeBarDayText = ctx.getString(R.string.today);
         } else if (sentAt.getTime() > yesterMidnight) {
-            timeBarDayText = getContext().getString(R.string.yesterday);
+            timeBarDayText = ctx.getString(R.string.yesterday);
         } else if (sentAt.getTime() > weekAgoMidnight) {
             cal.setTime(sentAt);
             timeBarDayText = Tools.TIME_WEEKDAYS_NAMES[cal.get(Calendar.DAY_OF_WEEK) - 1];

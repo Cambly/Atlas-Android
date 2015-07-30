@@ -1,12 +1,12 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 14
-    buildToolsVersion "22.0.1"
+    compileSdkVersion 22
+    buildToolsVersion '22.0.1'
 
     defaultConfig {
-        minSdkVersion 14
-        targetSdkVersion 14
+        minSdkVersion 16
+        targetSdkVersion 22
     }
 
     lintOptions {
@@ -15,7 +15,7 @@ android {
 }
 
 dependencies {
-    compile(group: 'com.layer.sdk', name: 'layer-sdk', version: "0.15.0") {
+    compile(group: 'com.layer.sdk', name: 'layer-sdk', version: "0.15.+") {
         exclude group: "com.android.support"
     }
     compile 'org.slf4j:slf4j-nop:1.5.8'

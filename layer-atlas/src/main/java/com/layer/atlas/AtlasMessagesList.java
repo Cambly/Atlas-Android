@@ -208,7 +208,7 @@ public class AtlasMessagesList extends FrameLayout implements LayerChangeEventLi
                     Date sentAt = cell.messagePart.getMessage().getSentAt();
                     if (sentAt == null) sentAt = new Date();
 
-                    String timeBarDayText = Atlas.formatTimeDay(sentAt);
+                    String timeBarDayText = Atlas.formatTimeDay(getContext(), sentAt);
                     timeBarDay.setText(timeBarDayText);
                     String timeBarTimeText = timeFormat.format(sentAt.getTime());
                     timeBarTime.setText(timeBarTimeText);
