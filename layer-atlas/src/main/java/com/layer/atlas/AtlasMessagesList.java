@@ -126,17 +126,17 @@ public class AtlasMessagesList extends FrameLayout implements LayerChangeEventLi
     //styles
     private static final float CELL_CONTAINER_ALPHA_UNSENT  = 0.5f;
     private static final float CELL_CONTAINER_ALPHA_SENT    = 1.0f;
-    private int myBubbleColor;
-    private int myTextColor;
-    private int myTextStyle;
-    private float myTextSize;
-    private Typeface myTextTypeface;
-    
-    private int otherBubbleColor;
-    private int otherTextColor;
-    private int otherTextStyle;
-    private float otherTextSize;
-    private Typeface otherTextTypeface;
+    public int myBubbleColor;
+    public int myTextColor;
+    public int myTextStyle;
+    public float myTextSize;
+    public Typeface myTextTypeface;
+
+    public int otherBubbleColor;
+    public int otherTextColor;
+    public int otherTextStyle;
+    public float otherTextSize;
+    public Typeface otherTextTypeface;
 
     private int dateTextColor;
     private int avatarTextColor;
