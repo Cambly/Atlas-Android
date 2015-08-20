@@ -742,6 +742,7 @@ public class AtlasMessagesList extends FrameLayout implements LayerChangeEventLi
         public TextCell(MessagePart messagePart, String text, AtlasMessagesList messagesList) {
             super(messagePart);
             this.text = text;
+            this.messagesList = messagesList;
         }
 
         public View onBind(ViewGroup cellContainer) {
