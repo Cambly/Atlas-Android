@@ -22,6 +22,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -67,6 +68,8 @@ import com.layer.sdk.messaging.Message;
 import com.layer.sdk.messaging.Message.RecipientStatus;
 import com.layer.sdk.messaging.MessagePart;
 import com.layer.sdk.query.Query;
+
+import static java.text.DateFormat.SHORT;
 
 /**
  * @author Oleg Orlov
@@ -201,20 +204,16 @@ public class AtlasMessagesList extends FrameLayout implements LayerChangeEventLi
                 spacerBottom.setVisibility(cell.clusterTail ? View.VISIBLE : View.GONE); 
                 
                 // format date
-                View timeBar = convertView.findViewById(R.id.atlas_view_messages_convert_timebar);
-                TextView timeBarDay = (TextView) convertView.findViewById(R.id.atlas_view_messages_convert_timebar_day);
-                TextView timeBarTime = (TextView) convertView.findViewById(R.id.atlas_view_messages_convert_timebar_time);
+                TextView datetimeBar = (TextView) convertView.findViewById(R.id.atlas_view_messages_convert_timebar);
                 if (cell.timeHeader) {
                     Date sentAt = cell.messagePart.getMessage().getSentAt();
                     if (sentAt == null) sentAt = new Date();
 
-                    String timeBarDayText = Atlas.formatTimeDay(getContext(), sentAt);
-                    timeBarDay.setText(timeBarDayText);
-                    String timeBarTimeText = timeFormat.format(sentAt.getTime());
-                    timeBarTime.setText(timeBarTimeText);
-                    timeBar.setVisibility(View.VISIBLE);
+                    String datetimeBarText = DateFormat.getDateTimeInstance(SHORT, SHORT, Locale.getDefault()).format(sentAt);
+                    datetimeBar.setText(datetimeBarText);
+                    datetimeBar.setVisibility(View.VISIBLE);
                 } else {
-                    timeBar.setVisibility(View.GONE);
+                    datetimeBar.setVisibility(View.GONE);
                 }
                 
                 View avatarContainer = convertView.findViewById(R.id.atlas_view_messages_convert_avatar_container);
@@ -296,9 +295,8 @@ public class AtlasMessagesList extends FrameLayout implements LayerChangeEventLi
                 if (!msg.getSender().getUserId().equals(client.getAuthenticatedUserId())) {
                     msg.markAsRead();
                 }
-                
-                timeBarDay.setTextColor(dateTextColor);
-                timeBarTime.setTextColor(dateTextColor);
+
+                datetimeBar.setTextColor(dateTextColor);
                 textAvatar.setTextColor(avatarTextColor);
                 
                 return convertView;

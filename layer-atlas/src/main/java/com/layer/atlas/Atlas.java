@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Method;
+import java.nio.charset.Charset;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -90,6 +91,8 @@ public class Atlas {
     public static final String MIME_TYPE_IMAGE_GIF = "image/gif";
     public static final String MIME_TYPE_IMAGE_GIF_PREVIEW = "image/gif+preview";
     public static final String MIME_TYPE_IMAGE_DIMENSIONS = "application/json+imageSize";
+
+    public static final String MIME_TYPE_CAMBLY_METADATA = "application/vnd.cambly+json";
 
     public static final ImageLoader imageLoader = new ImageLoader();
 
@@ -228,7 +231,7 @@ public class Atlas {
     }
 
     /** @return if Today: time. If Yesterday: "Yesterday", if within one week: day of week, otherwise: dateFormat.format() */
-    public static String formatTimeShort(Date dateTime, DateFormat timeFormat, DateFormat dateFormat) {
+    public static String formatTimeShort(Context ctx, Date dateTime, DateFormat timeFormat, DateFormat dateFormat) {
     
         Calendar cal = Calendar.getInstance();
         cal.set(Calendar.HOUR_OF_DAY, 0);
@@ -236,44 +239,16 @@ public class Atlas {
         cal.set(Calendar.SECOND, 0);
         long todayMidnight = cal.getTimeInMillis();
         long yesterMidnight = todayMidnight - Tools.TIME_HOURS_24;
-        long weekAgoMidnight = todayMidnight - Tools.TIME_HOURS_24 * 7;
         
         String timeText = null;
         if (dateTime.getTime() > todayMidnight) {
-            timeText = timeFormat.format(dateTime.getTime()); 
+            timeText = timeFormat.format(dateTime.getTime());
         } else if (dateTime.getTime() > yesterMidnight) {
-            timeText = "Yesterday";
-        } else if (dateTime.getTime() > weekAgoMidnight){
-            cal.setTime(dateTime);
-            timeText = Tools.TIME_WEEKDAYS_NAMES[cal.get(Calendar.DAY_OF_WEEK) - 1];
+            timeText = ctx.getString(R.string.yesterday);
         } else {
             timeText = dateFormat.format(dateTime);
         }
         return timeText;
-    }
-
-    /** Today, Yesterday, Weekday or Weekday + date */
-    public static String formatTimeDay(Context ctx, Date sentAt) {
-        Calendar cal = Calendar.getInstance();
-        cal.set(Calendar.HOUR_OF_DAY, 0);
-        cal.set(Calendar.MINUTE, 0);
-        cal.set(Calendar.SECOND, 0);
-        long todayMidnight = cal.getTimeInMillis();
-        long yesterMidnight = todayMidnight - Tools.TIME_HOURS_24;
-        long weekAgoMidnight = todayMidnight - Tools.TIME_HOURS_24 * 7;
-        
-        String timeBarDayText = null;
-        if (sentAt.getTime() > todayMidnight) {
-            timeBarDayText = ctx.getString(R.string.today);
-        } else if (sentAt.getTime() > yesterMidnight) {
-            timeBarDayText = ctx.getString(R.string.yesterday);
-        } else if (sentAt.getTime() > weekAgoMidnight) {
-            cal.setTime(sentAt);
-            timeBarDayText = Tools.TIME_WEEKDAYS_NAMES[cal.get(Calendar.DAY_OF_WEEK) - 1];
-        } else {
-            timeBarDayText = Tools.sdfDayOfWeek.format(sentAt);
-        }
-        return timeBarDayText;
     }
 
     public static final class Tools {
@@ -282,14 +257,30 @@ public class Atlas {
         // TODO: localization required to all time based constants below
         public static final SimpleDateFormat sdf = new SimpleDateFormat("HH:mm a"); 
         public static final SimpleDateFormat sdfDayOfWeek = new SimpleDateFormat("EEE, LLL dd,");
-        /** Ensure you decrease value returned by Calendar.get(Calendar.DAY_OF_WEEK) by 1. Calendar's days starts from 1. */
-        public static final String[] TIME_WEEKDAYS_NAMES = new String[] {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
         public static final BitmapDrawable EMPTY_DRAWABLE = new BitmapDrawable(Bitmap.createBitmap(new int[] { Color.TRANSPARENT }, 1, 1, Bitmap.Config.ALPHA_8));
         
         public static String toString(Message msg) {
             StringBuilder sb = new StringBuilder();
-            for (MessagePart mp : msg.getMessageParts()) {
-                if (MIME_TYPE_TEXT.equals(mp.getMimeType())) {
+            for (int i = 0; i < msg.getMessageParts().size(); i++) {
+                MessagePart mp = msg.getMessageParts().get(i);
+                if (Atlas.MIME_TYPE_CAMBLY_METADATA.equals(mp.getMimeType())) {
+                    try {
+                        // TODO(gar): we could centralize this logic. It also exists in AtlasCellFactory.
+                        JSONObject metadata = new JSONObject(new String(mp.getData(), Charset.forName("UTF-8")));
+                        String customType = metadata.getString("type");
+                        int partsCount = metadata.getInt("parts");
+                        JSONObject metadataContents = metadata.getJSONObject("metadata");
+                        if (customType.equals("attachment") && partsCount == 2) {
+                          String filename = metadataContents.getString("filename");
+                          sb.append(" <" +filename + "> ");
+                        }
+                        // The loop iterator will chomp of the metadata, and we are responsible for
+                        // chomping off all the contents: partsCount - 1.
+                        i += (partsCount - 1);
+                    } catch (JSONException e) {
+                        break;
+                    }
+                } else if (MIME_TYPE_TEXT.equals(mp.getMimeType())) {
                     sb.append(new String(mp.getData()));
                 } else if (MIME_TYPE_ATLAS_LOCATION.equals(mp.getMimeType())){
                     sb.append("Attachment: Location");

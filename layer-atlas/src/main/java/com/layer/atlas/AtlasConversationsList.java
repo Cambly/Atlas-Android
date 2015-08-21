@@ -457,7 +457,7 @@ public class AtlasConversationsList extends FrameLayout implements LayerChangeEv
     
     public String formatTime(Date sentAt) {
         if (sentAt == null) sentAt = new Date();
-        return Atlas.formatTimeShort(sentAt, timeFormat, dateFormat);
+        return Atlas.formatTimeShort(this.getContext(), sentAt, timeFormat, dateFormat);
     }
 
     @Override
