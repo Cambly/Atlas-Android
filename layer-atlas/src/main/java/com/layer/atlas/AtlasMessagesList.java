@@ -188,7 +188,7 @@ public class AtlasMessagesList extends FrameLayout implements LayerChangeEventLi
                 String userId = part.getMessage().getSender().getUserId();
 
                 boolean myMessage = client.getAuthenticatedUserId().equals(userId);
-                boolean showTheirDecor = participants.size() > 2;
+                boolean showTheirDecor = true; // Cambly always shows avatars
                 
                 if (convertView == null) { 
                     convertView = LayoutInflater.from(parent.getContext()).inflate(R.layout.atlas_view_messages_convert, parent, false);

@@ -1,6 +1,8 @@
 package com.layer.atlas.cells;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
@@ -144,7 +146,14 @@ public class CamblyAttachmentCell extends AtlasMessagesList.Cell implements View
       Uri uri = Uri.fromFile(f);
       Intent intent = new Intent(Intent.ACTION_VIEW);
       intent.setDataAndType(uri, attachment.getMimeType());
-      context.startActivity(intent);
+      if (intent.resolveActivity(context.getPackageManager()) != null) {
+        context.startActivity(intent);
+      } else {
+        new AlertDialog.Builder(context)
+            .setTitle(R.string.ohno)
+            .setMessage(R.string.cant_open)
+            .create().show();
+      }
     } catch (IOException e) {
       e.printStackTrace(); // LOG it too...
     }

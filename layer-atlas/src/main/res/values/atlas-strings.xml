@@ -29,4 +29,6 @@
     <string name="compose_hint">Hi there! ...</string>
     <string name="delivered">Delivered</string>
     <string name="read">Read</string>
+    <string name="ohno">Oh no!</string>
+    <string name="cant_open">We couldn\'t open this attachment</string>
 </resources>
