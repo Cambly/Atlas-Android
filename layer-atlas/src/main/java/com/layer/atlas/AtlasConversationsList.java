@@ -80,6 +80,21 @@ public class AtlasConversationsList extends FrameLayout implements LayerChangeEv
     private ArrayList<Conversation> conversations = new ArrayList<Conversation>();
     
     private LayerClient layerClient;
+
+    // clean everything if deathenticated (client will explode on .getConversation())
+    // and rebuilt everything back after successful authentication
+    private LayerAuthenticationListener authListener = new LayerAuthenticationListener() {
+      public void onDeauthenticated(LayerClient client) {
+        if (debug) Log.w(TAG, "onDeauthenticated() ");
+        updateValues();
+      }
+      public void onAuthenticated(LayerClient client, String userId) {
+        updateValues();
+      }
+      public void onAuthenticationError(LayerClient client, LayerException exception) {}
+      public void onAuthenticationChallenge(LayerClient client, String nonce) {}
+    };
+  ;
     private Query<Conversation> query;
     
     private ConversationClickListener clickListener;
@@ -342,24 +357,22 @@ public class AtlasConversationsList extends FrameLayout implements LayerChangeEv
                 return true;
             }
         });
-        
-        // clean everything if deathenticated (client will explode on .getConversation())
-        // and rebuilt everything back after successful authentication  
-        layerClient.registerAuthenticationListener(new LayerAuthenticationListener() {
-            public void onDeauthenticated(LayerClient client) {
-                if (debug) Log.w(TAG, "onDeauthenticated() ");
-                updateValues();
-            }
-            public void onAuthenticated(LayerClient client, String userId) {
-                updateValues();
-            }
-            public void onAuthenticationError(LayerClient client, LayerException exception) {}
-            public void onAuthenticationChallenge(LayerClient client, String nonce) {}
-        });
-        
+
+        if (authListener != null) {
+          layerClient.registerAuthenticationListener(authListener);
+        }
+
         applyStyle();
 
         updateValues();
+      }
+
+    public void destroy() {
+      if (authListener != null) {
+        layerClient.unregisterAuthenticationListener(authListener);
+        this.authListener = null; // it's possible that init is called after destroy
+      }
+      // Can't say I'm a huge fan of this pattern, but I don't want to diverge too much.
     }
     
     public void updateValues() {
