@@ -123,6 +123,7 @@ public class AtlasMessagesList extends FrameLayout implements LayerChangeEventLi
     
     private Message latestReadMessage = null;
     private Message latestDeliveredMessage = null;
+    private Message latestSentMessage = null;
     
     private ItemClickListener clickListener;
     
@@ -272,8 +273,12 @@ public class AtlasMessagesList extends FrameLayout implements LayerChangeEventLi
                 
                 // mark unsent messages
                 View cellContainer = convertView.findViewById(R.id.atlas_view_messages_cell_container);
-                cellContainer.setAlpha((myMessage && !cell.messagePart.getMessage().isSent()) 
-                        ? CELL_CONTAINER_ALPHA_UNSENT : CELL_CONTAINER_ALPHA_SENT);
+                if (myMessage && !cell.messagePart.getMessage().isSent()) {
+                    cellContainer.setAlpha(CELL_CONTAINER_ALPHA_UNSENT);
+                    requestRefreshValues(false, false, 1000); // exponential backoff + repeated calls...
+                } else {
+                    cellContainer.setAlpha(CELL_CONTAINER_ALPHA_SENT);
+                }
                 
                 // delivery receipt check
                 TextView receiptView = (TextView) convertView.findViewById(R.id.atlas_view_messages_convert_delivery_receipt);
@@ -541,6 +546,8 @@ public class AtlasMessagesList extends FrameLayout implements LayerChangeEventLi
         if (debug) Log.w(TAG, "updateDeliveryStatus() checking messages:   " + messagesData.size());
         Message oldLatestDeliveredMessage = latestDeliveredMessage;
         Message oldLatestReadMessage = latestReadMessage;
+        Message oldLatestSentMessage = latestSentMessage;
+
         // reset before scan
         latestDeliveredMessage = null;
         latestReadMessage = null;
@@ -550,6 +557,7 @@ public class AtlasMessagesList extends FrameLayout implements LayerChangeEventLi
             Message message = msgData.msg;
             if (client.getAuthenticatedUserId().equals(message.getSender().getUserId())){
                 if (!message.isSent()) continue;
+                latestSentMessage = message;
                 Map<String, RecipientStatus> statuses = message.getRecipientStatus();
                 if (statuses == null || statuses.size() == 0) continue;
                 for (Map.Entry<String, RecipientStatus> entry : statuses.entrySet()) {
@@ -577,10 +585,16 @@ public class AtlasMessagesList extends FrameLayout implements LayerChangeEventLi
         else if (oldLatestReadMessage != null && latestReadMessage == null) changed = true;
         else if (oldLatestReadMessage != null && latestReadMessage != null 
                 && !oldLatestReadMessage.getId().equals(latestReadMessage.getId())) changed = true;
+
+        if      (oldLatestSentMessage == null && latestSentMessage != null) changed = true;
+        else if (oldLatestSentMessage != null && latestSentMessage == null) changed = true;
+        else if (oldLatestSentMessage != null && latestSentMessage != null
+                && !oldLatestSentMessage.getId().equals(latestSentMessage.getId())) changed = true;
         
         if (debug) Log.w(TAG, "updateDeliveryStatus() read status changed: " + (changed ? "yes" : "no"));
         if (debug) Log.w(TAG, "updateDeliveryStatus() latestRead:          " + (latestReadMessage != null ? latestReadMessage.getSentAt() + ", id: " + latestReadMessage.getId() : "null"));
         if (debug) Log.w(TAG, "updateDeliveryStatus() latestDelivered:     " + (latestDeliveredMessage != null ? latestDeliveredMessage.getSentAt()+ ", id: " + latestDeliveredMessage.getId() : "null"));
+        if (debug) Log.w(TAG, "updateDeliveryStatus() latestSent:     " + (latestSentMessage != null ? latestSentMessage.getSentAt()+ ", id: " + latestSentMessage.getId() : "null"));
         
         return changed;
     }
@@ -608,7 +622,7 @@ public class AtlasMessagesList extends FrameLayout implements LayerChangeEventLi
         }
         
     };
-    
+
     @Override
     public void onEventMainThread(LayerChangeEvent event) {
         boolean updateValues = false;
@@ -646,18 +660,22 @@ public class AtlasMessagesList extends FrameLayout implements LayerChangeEventLi
         }
         
         if (updateValues || updateDeliveryStatus) {
-            requestRefreshValues(updateValues, jumpToBottom);
+            requestRefreshValues(updateValues, jumpToBottom, 0);
         }
     }
     
-    public void requestRefreshValues(boolean updateValues, boolean jumpToBottom) {
+    public void requestRefreshValues(boolean updateValues, boolean jumpToBottom, int delay) {
         if (messageUpdateSentAt == 0) messageUpdateSentAt = System.currentTimeMillis();
         refreshHandler.removeMessages(MESSAGE_TYPE_UPDATE_VALUES);
         final android.os.Message message = refreshHandler.obtainMessage();
         message.arg1 = updateValues ? MESSAGE_REFRESH_UPDATE_ALL : MESSAGE_REFRESH_UPDATE_DELIVERY;
         message.arg2 = jumpToBottom ? 1 : 0; 
         message.obj  = client;
-        refreshHandler.sendMessage(message);
+        if (delay > 0) {
+            refreshHandler.sendMessageDelayed(message, delay);
+        } else {
+            refreshHandler.sendMessage(message);
+        }
     }
     
     public void requestRefresh() {
