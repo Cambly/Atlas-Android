@@ -358,9 +358,7 @@ public class AtlasConversationsList extends FrameLayout implements LayerChangeEv
             }
         });
 
-        if (authListener != null) {
-          layerClient.registerAuthenticationListener(authListener);
-        }
+        layerClient.registerAuthenticationListener(authListener);
 
         applyStyle();
 
@@ -368,11 +366,7 @@ public class AtlasConversationsList extends FrameLayout implements LayerChangeEv
       }
 
     public void destroy() {
-      if (authListener != null) {
-        layerClient.unregisterAuthenticationListener(authListener);
-        this.authListener = null; // it's possible that init is called after destroy
-      }
-      // Can't say I'm a huge fan of this pattern, but I don't want to diverge too much.
+      layerClient.unregisterAuthenticationListener(authListener);
     }
     
     public void updateValues() {
